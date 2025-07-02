@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/dist/output_parsers";
 
 export async function GET() {
     try {
@@ -10,16 +11,14 @@ export async function GET() {
         temperature: 0.7
     })
 
-    const messages = [
-        new SystemMessage("You are a helpful assistant"),
-        new HumanMessage("Merhaba"),
-    ]
+    const prompt = ChatPromptTemplate.fromTemplate("Bir {konu} hakkında kısa bir blog yazısı yaz.")
+    const chain = prompt.pipe(model).pipe(new StringOutputParser());
 
-    const response = await model.invoke(messages)
+    const response = await chain.invoke({konu: "Yapay zeka"});
 
-    console.log(response.content)
+    console.log(response)
 
-    return NextResponse.json(response.content)
+    return NextResponse.json(response)
 
     } catch (error) {
         console.error("Api Hatası", error)
